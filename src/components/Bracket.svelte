@@ -168,56 +168,60 @@
 
       <!-- SF left -->
       <div class="flex flex-col justify-center border-r border-gray-700 pr-2" style="min-height:420px">
-        {@const { home, away } = matchTeams('l-sf')}
-        <BracketMatch
-          matchId="l-sf"
-          homeTeam={home}
-          awayTeam={away}
-          winnerTeam={winnerOf('l-sf')}
-          onPickWinner={pickWinner}
-          onPickThirdPlace={pickThirdPlace}
-        />
+        {#each [matchTeams('l-sf')] as { home, away }}
+          <BracketMatch
+            matchId="l-sf"
+            homeTeam={home}
+            awayTeam={away}
+            winnerTeam={winnerOf('l-sf')}
+            onPickWinner={pickWinner}
+            onPickThirdPlace={pickThirdPlace}
+          />
+        {/each}
       </div>
 
       <!-- FINAL + BRONZE -->
       <div class="flex flex-col items-center justify-center gap-6 px-4" style="min-height:420px">
         <div class="text-center">
           <div class="text-xs text-yellow-400 font-bold tracking-widest mb-2">🏆 FINAL</div>
-          {@const { home, away } = matchTeams('final')}
-          <BracketMatch
-            matchId="final"
-            homeTeam={home}
-            awayTeam={away}
-            winnerTeam={winnerOf('final')}
-            onPickWinner={pickWinner}
-            onPickThirdPlace={pickThirdPlace}
-          />
+          {#each [matchTeams('final')] as { home, away }}
+            <BracketMatch
+              matchId="final"
+              homeTeam={home}
+              awayTeam={away}
+              winnerTeam={winnerOf('final')}
+              onPickWinner={pickWinner}
+              onPickThirdPlace={pickThirdPlace}
+            />
+          {/each}
         </div>
         <div class="text-center">
           <div class="text-xs text-gray-400 font-bold tracking-widest mb-2">BRONZE</div>
-          {@const b = bronzeTeams()}
-          <BracketMatch
-            matchId="bronze"
-            homeTeam={b.home}
-            awayTeam={b.away}
-            winnerTeam={winnerOf('bronze')}
-            onPickWinner={pickWinner}
-            onPickThirdPlace={pickThirdPlace}
-          />
+          {#each [bronzeTeams()] as b}
+            <BracketMatch
+              matchId="bronze"
+              homeTeam={b.home}
+              awayTeam={b.away}
+              winnerTeam={winnerOf('bronze')}
+              onPickWinner={pickWinner}
+              onPickThirdPlace={pickThirdPlace}
+            />
+          {/each}
         </div>
       </div>
 
       <!-- SF right -->
       <div class="flex flex-col justify-center border-l border-gray-700 pl-2" style="min-height:420px">
-        {@const { home, away } = matchTeams('r-sf')}
-        <BracketMatch
-          matchId="r-sf"
-          homeTeam={home}
-          awayTeam={away}
-          winnerTeam={winnerOf('r-sf')}
-          onPickWinner={pickWinner}
-          onPickThirdPlace={pickThirdPlace}
-        />
+        {#each [matchTeams('r-sf')] as { home, away }}
+          <BracketMatch
+            matchId="r-sf"
+            homeTeam={home}
+            awayTeam={away}
+            winnerTeam={winnerOf('r-sf')}
+            onPickWinner={pickWinner}
+            onPickThirdPlace={pickThirdPlace}
+          />
+        {/each}
       </div>
 
       <!-- QF right -->
