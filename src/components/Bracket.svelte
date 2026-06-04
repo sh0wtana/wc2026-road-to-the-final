@@ -1,5 +1,4 @@
 <script>
-  import { untrack } from 'svelte'
   import BracketMatch from './BracketMatch.svelte'
   import { state } from '../store.svelte.js'
   import { R32_MATCHES, R16_FEED, QF_FEED, SF_FEED } from '../data/bracket.js'
@@ -26,6 +25,7 @@
 
   function pickThirdPlace(slotKey, teamId) {
     state.thirdPlaceAssignments[slotKey] = teamId
+    Object.keys(state.matchWinners).forEach(k => { state.matchWinners[k] = null })
   }
 
   function clearDownstream(matchId) {
@@ -57,21 +57,6 @@
     const lLoser = lw && lh && la ? (lh.id === lw ? la : lh) : null
     const rLoser = rw && rh && ra ? (rh.id === rw ? ra : rh) : null
     return { home: lLoser, away: rLoser }
-  })
-
-  // Auto-resolve R32: home team (higher seed) always wins
-  $effect(() => {
-    const snapshot = r32
-    untrack(() => {
-      R32_MATCHES.forEach(m => {
-        const home = snapshot[m.id]?.home
-        const newWinner = home ? home.id : null
-        if (state.matchWinners[m.id] !== newWinner) {
-          state.matchWinners[m.id] = newWinner
-          clearDownstream(m.id)
-        }
-      })
-    })
   })
 
   const LEFT_R32  = ['m1','m2','m3','m4','m5','m6','m7','m8']
@@ -129,6 +114,15 @@
                     isThirdSlot={true}
                     slotKey={ts.slotKey}
                     winnerTeam={null}
+                    onPickWinner={pickWinner}
+                    onPickThirdPlace={pickThirdPlace}
+                  />
+                {:else}
+                  <BracketMatch
+                    matchId={mid}
+                    homeTeam={r32[mid]?.home}
+                    awayTeam={r32[mid]?.away}
+                    winnerTeam={winnerOf(mid)}
                     onPickWinner={pickWinner}
                     onPickThirdPlace={pickThirdPlace}
                   />
@@ -305,6 +299,15 @@
                     isThirdSlot={true}
                     slotKey={ts.slotKey}
                     winnerTeam={null}
+                    onPickWinner={pickWinner}
+                    onPickThirdPlace={pickThirdPlace}
+                  />
+                {:else}
+                  <BracketMatch
+                    matchId={mid}
+                    homeTeam={r32[mid]?.home}
+                    awayTeam={r32[mid]?.away}
+                    winnerTeam={winnerOf(mid)}
                     onPickWinner={pickWinner}
                     onPickThirdPlace={pickThirdPlace}
                   />
