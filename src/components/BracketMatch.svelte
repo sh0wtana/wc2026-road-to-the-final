@@ -9,6 +9,7 @@
     awayTeam = null,
     winnerTeam = null,
     isThirdSlot = false,
+    isFinal = false,
     slotKey = '',
     onPickWinner,
     onPickThirdPlace,
@@ -41,21 +42,22 @@
   disabled={isLocked || isDone}
   class="
     flex items-center gap-2 px-3 py-2 rounded border text-sm font-medium w-32 text-left
-    {isDone      ? 'bg-green-900/50 border-green-700 text-green-300 cursor-default' : ''}
-    {isPickable  ? 'bg-gray-700 border-gray-500 hover:bg-blue-700 hover:border-blue-400 cursor-pointer transition-colors' : ''}
-    {isLocked    ? 'bg-gray-800/40 border-gray-700 text-gray-600 cursor-default' : ''}
-    {isThirdSlot && !winnerTeam ? 'bg-amber-950/50 border-amber-700 text-amber-400 hover:bg-amber-900/60 cursor-pointer transition-colors' : ''}
+    {isDone && isFinal  ? 'bg-surface border-amber-400 shadow-[0_0_16px_theme(colors.amber.400/35%)] text-amber-300 cursor-default' : ''}
+    {isDone && !isFinal ? 'bg-green-900/40 border-green-700 text-green-300 cursor-default' : ''}
+    {isPickable         ? 'bg-surface border-amber-900 hover:border-amber-400 hover:shadow-[0_0_12px_theme(colors.amber.400/20%)] cursor-pointer transition-all' : ''}
+    {isLocked           ? 'bg-surface border-border-subtle text-slate-500 cursor-default' : ''}
+    {isThirdSlot && !winnerTeam ? 'bg-surface border-amber-900 text-amber-400 hover:border-amber-400 hover:shadow-[0_0_12px_theme(colors.amber.400/20%)] cursor-pointer transition-all' : ''}
   "
 >
   {#if isDone}
     <span>{winnerTeam.flag}</span>
     <span class="truncate">{winnerTeam.name}</span>
   {:else if isPickable}
-    <span class="text-gray-300 text-xs italic">pick winner</span>
+    <span class="text-slate-500 text-xs italic">pick winner</span>
   {:else if isThirdSlot && !winnerTeam}
     <span class="text-xs">{slotKey}</span>
   {:else}
-    <span class="text-gray-600 text-xs">🔒</span>
+    <span class="text-slate-500 text-xs">🔒</span>
   {/if}
 </button>
 
