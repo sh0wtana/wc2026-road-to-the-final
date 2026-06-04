@@ -1,7 +1,7 @@
 <script>
   import TeamPicker from './TeamPicker.svelte'
   import { getEligibleThirdPlaceTeams } from '../lib/bracket.js'
-  import { state } from '../store.svelte.js'
+  import { state as appState } from '../store.svelte.js'
 
   let {
     matchId,
@@ -18,7 +18,7 @@
   let showPicker = $state(false)
 
   const eligible = $derived(
-    isThirdSlot ? getEligibleThirdPlaceTeams(slotKey, state.groups) : []
+    isThirdSlot ? getEligibleThirdPlaceTeams(slotKey, appState.groups) : []
   )
   const pickTeams = $derived(isThirdSlot ? eligible : [homeTeam, awayTeam].filter(Boolean))
 
