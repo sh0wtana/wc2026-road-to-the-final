@@ -5,7 +5,7 @@
   import { resetState } from './store.svelte.js'
 </script>
 
-<div class="min-h-screen bg-gray-950 text-white">
+<div class="min-h-screen bg-gradient-to-br from-pitch to-pitch-end text-slate-100">
   <Header onReset={resetState} />
   <GroupSection />
   <Bracket />
