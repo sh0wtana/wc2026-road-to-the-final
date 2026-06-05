@@ -21,6 +21,7 @@
         >
           <span class="text-xl">{team.flag}</span>
           <span class="font-semibold">{team.name}</span>
+          <span class="ml-auto text-xs opacity-60 font-normal">Group {team.group}</span>
         </button>
       {/each}
     </div>

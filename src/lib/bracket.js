@@ -5,7 +5,10 @@ export function getTeamForSlot(slot, groups) {
 }
 
 export function getEligibleThirdPlaceTeams(slotKey, groups) {
-  return slotKey.slice(1).split('').map(g => groups[g]?.[2]).filter(Boolean)
+  return slotKey.slice(1).split('').map(g => {
+    const team = groups[g]?.[2]
+    return team ? { ...team, group: g } : null
+  }).filter(Boolean)
 }
 
 export function findTeamById(id, groups) {

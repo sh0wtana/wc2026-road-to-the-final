@@ -1,71 +1,60 @@
 <script>
-  import TeamPicker from './TeamPicker.svelte'
-  import { getEligibleThirdPlaceTeams } from '../lib/bracket.js'
-  import { state as appState } from '../store.svelte.js'
-
   let {
     matchId,
     homeTeam = null,
     awayTeam = null,
     winnerTeam = null,
-    isThirdSlot = false,
     isFinal = false,
-    slotKey = '',
     onPickWinner,
-    onPickThirdPlace,
   } = $props()
 
-  let showPicker = $state(false)
-
-  const eligible = $derived(
-    isThirdSlot ? getEligibleThirdPlaceTeams(slotKey, appState.groups) : []
-  )
-  const pickTeams = $derived(isThirdSlot ? eligible : [homeTeam, awayTeam].filter(Boolean))
-
-  const isLocked   = $derived(!isThirdSlot && !winnerTeam && (!homeTeam || !awayTeam))
-  const isPickable = $derived(!isThirdSlot && !winnerTeam && !!homeTeam && !!awayTeam)
+  const isLocked   = $derived(!homeTeam || !awayTeam)
   const isDone     = $derived(!!winnerTeam)
+  const isPickable = $derived(!isLocked)
 
-  function handleClick() {
-    if (isPickable || (isThirdSlot && !winnerTeam)) showPicker = true
+  function pick(team) {
+    if (isPickable && team) onPickWinner(matchId, team.id)
   }
 
-  function handlePick(team) {
-    if (isThirdSlot) onPickThirdPlace(slotKey, team.id)
-    else onPickWinner(matchId, team.id)
-    showPicker = false
+  function rowClass(team) {
+    if (!team) return 'text-slate-600 cursor-default bg-surface'
+    if (isDone) {
+      return winnerTeam.id === team.id
+        ? 'text-amber-300 font-medium bg-surface cursor-default'
+        : 'text-slate-500 bg-surface hover:bg-surface-hover hover:text-amber-300 cursor-pointer transition-colors'
+    }
+    if (isPickable) return 'text-slate-300 bg-surface hover:bg-surface-hover hover:text-amber-300 cursor-pointer transition-colors'
+    return 'text-slate-600 bg-surface cursor-default'
   }
 </script>
 
-<button
-  onclick={handleClick}
-  disabled={isLocked || isDone}
-  class="
-    flex items-center gap-2 px-3 py-2 rounded border text-sm font-medium w-32 text-left
-    {isDone && isFinal  ? 'bg-surface border-amber-400 shadow-[0_0_16px_theme(colors.amber.400/35%)] text-amber-300 cursor-default' : ''}
-    {isDone && !isFinal ? 'bg-green-900/40 border-green-700 text-green-300 cursor-default' : ''}
-    {isPickable         ? 'bg-surface border-amber-900 hover:border-amber-400 hover:shadow-[0_0_12px_theme(colors.amber.400/20%)] cursor-pointer transition-all' : ''}
-    {isLocked           ? 'bg-surface border-border-subtle text-slate-500 cursor-default' : ''}
-    {isThirdSlot && !winnerTeam ? 'bg-surface border-amber-900 text-amber-400 hover:border-amber-400 hover:shadow-[0_0_12px_theme(colors.amber.400/20%)] cursor-pointer transition-all' : ''}
-  "
->
-  {#if isDone}
-    <span>{winnerTeam.flag}</span>
-    <span class="truncate">{winnerTeam.name}</span>
-  {:else if isPickable}
-    <span class="text-slate-500 text-xs italic">pick winner</span>
-  {:else if isThirdSlot && !winnerTeam}
-    <span class="text-xs">{slotKey}</span>
-  {:else}
-    <span class="text-slate-500 text-xs">🔒</span>
-  {/if}
-</button>
-
-{#if showPicker && pickTeams.length > 0}
-  <TeamPicker
-    title={isThirdSlot ? `Assign ${slotKey}` : `Pick winner`}
-    teams={pickTeams}
-    onPick={handlePick}
-    onClose={() => showPicker = false}
-  />
-{/if}
+<div class="rounded border text-xs w-36 overflow-hidden
+  {isFinal && isDone  ? 'border-amber-400 shadow-[0_0_16px_theme(colors.amber.400/35%)]' : ''}
+  {isFinal && !isDone ? 'border-amber-900/60' : ''}
+  {!isFinal && isDone ? 'border-surface-raised' : ''}
+  {!isFinal && isPickable ? 'border-border-subtle' : ''}
+  {!isFinal && isLocked   ? 'border-surface-raised' : ''}
+">
+  <button
+    onclick={() => pick(homeTeam)}
+    disabled={!isPickable}
+    class="flex items-center gap-1.5 px-2 py-1 w-full border-b border-surface-raised {rowClass(homeTeam)}"
+  >
+    {#if homeTeam}
+      <span>{homeTeam.flag}</span><span class="truncate">{homeTeam.name}</span>
+    {:else}
+      <span>—</span>
+    {/if}
+  </button>
+  <button
+    onclick={() => pick(awayTeam)}
+    disabled={!isPickable}
+    class="flex items-center gap-1.5 px-2 py-1 w-full {rowClass(awayTeam)}"
+  >
+    {#if awayTeam}
+      <span>{awayTeam.flag}</span><span class="truncate">{awayTeam.name}</span>
+    {:else}
+      <span>—</span>
+    {/if}
+  </button>
+</div>
