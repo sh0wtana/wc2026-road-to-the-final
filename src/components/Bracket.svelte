@@ -1,12 +1,18 @@
 <script>
   import confetti from 'canvas-confetti'
   import BracketMatch from './BracketMatch.svelte'
-  import TeamPicker from './TeamPicker.svelte'
+  import ThirdPlacePopover from './ThirdPlacePopover.svelte'
   import { state as appState, pushSnapshot } from '../store.svelte.js'
   import { R32_MATCHES, R16_FEED, QF_FEED, SF_FEED, FINAL_FEED } from '../data/bracket.js'
   import { getR32Teams, getPostR32Teams, findTeamById, getEligibleThirdPlaceTeams } from '../lib/bracket.js'
 
   let activeThirdSlot = $state(null)
+  let anchorRect = $state(null)
+
+  function openThirdSlot(slotKey, el) {
+    anchorRect = el.getBoundingClientRect()
+    activeThirdSlot = slotKey
+  }
 
   $effect(() => {
     if (appState.matchWinners['final']) {
@@ -184,7 +190,7 @@
           </button>
           {#if ts.isThird && !appState.thirdPlaceAssignments[ts.slotKey]}
             <button
-              onclick={() => { activeThirdSlot = ts.slotKey }}
+              onclick={(e) => openThirdSlot(ts.slotKey, e.currentTarget)}
               class="flex-1 flex items-center justify-center text-sm text-amber-500 hover:text-amber-300 cursor-pointer w-full font-semibold animate-pulse"
             >{ts.slotKey}</button>
           {:else}
@@ -196,7 +202,7 @@
                 <span
                   role="button"
                   tabindex="0"
-                  onclick={(e) => { e.stopPropagation(); activeThirdSlot = ts.slotKey }}
+                  onclick={(e) => { e.stopPropagation(); openThirdSlot(ts.slotKey, e.currentTarget.closest('button') ?? e.currentTarget) }}
                   class="text-[9px] text-amber-600 hover:text-amber-300 shrink-0 w-8 cursor-pointer"
                   title="Re-pick 3rd place team"
                 >↺</span>
@@ -358,7 +364,7 @@
           </button>
           {#if ts.isThird && !appState.thirdPlaceAssignments[ts.slotKey]}
             <button
-              onclick={() => { activeThirdSlot = ts.slotKey }}
+              onclick={(e) => openThirdSlot(ts.slotKey, e.currentTarget)}
               class="flex-1 flex items-center justify-center text-sm text-amber-500 hover:text-amber-300 cursor-pointer w-full font-semibold animate-pulse"
             >{ts.slotKey}</button>
           {:else}
@@ -370,7 +376,7 @@
                 <span
                   role="button"
                   tabindex="0"
-                  onclick={(e) => { e.stopPropagation(); activeThirdSlot = ts.slotKey }}
+                  onclick={(e) => { e.stopPropagation(); openThirdSlot(ts.slotKey, e.currentTarget.closest('button') ?? e.currentTarget) }}
                   class="text-[9px] text-amber-600 hover:text-amber-300 shrink-0 w-8 cursor-pointer"
                   title="Re-pick 3rd place team"
                 >↺</span>
@@ -396,7 +402,8 @@
       .map(([, id]) => id)
       .filter(Boolean)
   )}
-  <TeamPicker
+  <ThirdPlacePopover
+    {anchorRect}
     title="Assign {activeThirdSlot}"
     teams={getEligibleThirdPlaceTeams(activeThirdSlot, appState.groups).filter(t => !usedIds.has(t.id))}
     onPick={(team) => pickThirdPlace(activeThirdSlot, team.id)}

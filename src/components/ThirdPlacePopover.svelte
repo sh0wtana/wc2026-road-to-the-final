@@ -1,0 +1,48 @@
+<script>
+  let { anchorRect, title, teams, onPick, onClose } = $props()
+
+  const WIDTH = 210
+  const ROW_HEIGHT = 44
+  const HEADER_HEIGHT = 36
+  const GAP = 8
+
+  const style = $derived.by(() => {
+    if (!anchorRect) return ''
+    const estimatedHeight = HEADER_HEIGHT + teams.length * ROW_HEIGHT + 16
+    const isRightSide = anchorRect.left > window.innerWidth / 2
+
+    const left = isRightSide
+      ? anchorRect.left - WIDTH - GAP
+      : anchorRect.right + GAP
+
+    const spaceBelow = window.innerHeight - anchorRect.top
+    const top = spaceBelow < estimatedHeight + 16
+      ? Math.max(8, anchorRect.bottom - estimatedHeight)
+      : anchorRect.top
+
+    return `top:${top}px; left:${left}px; width:${WIDTH}px;`
+  })
+</script>
+
+<!-- backdrop for click-outside -->
+<div class="fixed inset-0 z-40" onclick={onClose} aria-hidden="true"></div>
+
+<div
+  style={style}
+  class="fixed z-50 bg-surface border border-border-subtle rounded-xl p-3 shadow-2xl"
+  onclick={(e) => e.stopPropagation()}
+>
+  <p class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2">{title}</p>
+  <div class="flex flex-col gap-1.5">
+    {#each teams as team (team.id)}
+      <button
+        onclick={() => onPick(team)}
+        class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg bg-surface-raised hover:bg-amber-400 hover:text-pitch transition-colors text-left w-full"
+      >
+        <span class="text-lg">{team.flag}</span>
+        <span class="font-semibold text-sm truncate">{team.name}</span>
+        <span class="ml-auto text-xs opacity-60 font-normal shrink-0">G{team.group}</span>
+      </button>
+    {/each}
+  </div>
+</div>
