@@ -153,8 +153,8 @@
           {#if ts.isThird && !appState.thirdPlaceAssignments[ts.slotKey]}
             <button
               onclick={() => { activeThirdSlot = ts.slotKey }}
-              class="flex-1 flex items-center justify-center text-sm text-amber-500 hover:text-amber-300 cursor-pointer transition-colors w-full font-semibold"
-            >Pick {ts.slotKey}</button>
+              class="flex-1 flex items-center justify-center text-sm text-amber-500 hover:text-amber-300 cursor-pointer w-full font-semibold animate-pulse"
+            >{ts.slotKey}</button>
           {:else}
             <button
               onclick={() => handlePickR32(mid, false)}
@@ -327,8 +327,8 @@
           {#if ts.isThird && !appState.thirdPlaceAssignments[ts.slotKey]}
             <button
               onclick={() => { activeThirdSlot = ts.slotKey }}
-              class="flex-1 flex items-center justify-center text-sm text-amber-500 hover:text-amber-300 cursor-pointer transition-colors w-full font-semibold"
-            >Pick {ts.slotKey}</button>
+              class="flex-1 flex items-center justify-center text-sm text-amber-500 hover:text-amber-300 cursor-pointer w-full font-semibold animate-pulse"
+            >{ts.slotKey}</button>
           {:else}
             <button
               onclick={() => handlePickR32(mid, false)}
