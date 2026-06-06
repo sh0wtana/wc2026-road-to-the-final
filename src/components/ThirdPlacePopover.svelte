@@ -41,7 +41,7 @@
       >
         <span class="text-lg">{team.flag}</span>
         <span class="font-semibold text-sm truncate">{team.name}</span>
-        <span class="ml-auto text-xs opacity-60 font-normal shrink-0">G{team.group}</span>
+        <span class="ml-auto text-xs text-slate-200 font-bold shrink-0">{team.group}</span>
       </button>
     {/each}
   </div>

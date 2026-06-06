@@ -141,6 +141,13 @@
     pickWinner(mid, isHome ? home.id : away.id)
   }
 
+  function teamGroup(teamId) {
+    for (const [g, teams] of Object.entries(appState.groups)) {
+      if (teams.some(t => t.id === teamId)) return g
+    }
+    return '?'
+  }
+
   function r32RowClass(team, winner, canPick) {
     if (!team) return 'text-slate-600 cursor-default'
     if (winner) return winner.id === team.id
@@ -199,18 +206,21 @@
               class="flex-1 flex items-center gap-1.5 px-2 w-full text-left {r32RowClass(awayTeam, winner, canPick)}"
             >
               {#if ts.isThird}
-                <span
-                  role="button"
-                  tabindex="0"
-                  onclick={(e) => { e.stopPropagation(); openThirdSlot(ts.slotKey, e.currentTarget.closest('button') ?? e.currentTarget) }}
-                  class="text-[9px] text-amber-600 hover:text-amber-300 shrink-0 w-8 cursor-pointer"
-                  title="Re-pick 3rd place team"
-                >↺</span>
+                <span class="text-xs text-slate-200 font-bold shrink-0 w-8">3{teamGroup(appState.thirdPlaceAssignments[ts.slotKey])}</span>
               {:else}
                 <span class="text-xs text-slate-200 font-bold shrink-0 w-8">{m?.away}</span>
               {/if}
               {#if awayTeam}<span>{awayTeam.flag}</span><span class="truncate font-semibold uppercase">{awayTeam.name}</span>
               {:else}<span>—</span>{/if}
+              {#if ts.isThird}
+                <span
+                  role="button"
+                  tabindex="0"
+                  onclick={(e) => { e.stopPropagation(); openThirdSlot(ts.slotKey, e.currentTarget.closest('button') ?? e.currentTarget) }}
+                  class="text-xs text-amber-600 hover:text-amber-300 ml-auto cursor-pointer"
+                  title="Re-pick 3rd place team"
+                >↺</span>
+              {/if}
             </button>
           {/if}
         </div>
@@ -373,18 +383,21 @@
               class="flex-1 flex items-center gap-1.5 px-2 w-full text-left {r32RowClass(awayTeam, winner, canPick)}"
             >
               {#if ts.isThird}
-                <span
-                  role="button"
-                  tabindex="0"
-                  onclick={(e) => { e.stopPropagation(); openThirdSlot(ts.slotKey, e.currentTarget.closest('button') ?? e.currentTarget) }}
-                  class="text-[9px] text-amber-600 hover:text-amber-300 shrink-0 w-8 cursor-pointer"
-                  title="Re-pick 3rd place team"
-                >↺</span>
+                <span class="text-xs text-slate-200 font-bold shrink-0 w-8">3{teamGroup(appState.thirdPlaceAssignments[ts.slotKey])}</span>
               {:else}
                 <span class="text-xs text-slate-200 font-bold shrink-0 w-8">{m?.away}</span>
               {/if}
               {#if awayTeam}<span>{awayTeam.flag}</span><span class="truncate font-semibold uppercase">{awayTeam.name}</span>
               {:else}<span>—</span>{/if}
+              {#if ts.isThird}
+                <span
+                  role="button"
+                  tabindex="0"
+                  onclick={(e) => { e.stopPropagation(); openThirdSlot(ts.slotKey, e.currentTarget.closest('button') ?? e.currentTarget) }}
+                  class="text-xs text-amber-600 hover:text-amber-300 ml-auto cursor-pointer"
+                  title="Re-pick 3rd place team"
+                >↺</span>
+              {/if}
             </button>
           {/if}
         </div>
