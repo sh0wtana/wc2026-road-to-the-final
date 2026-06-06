@@ -21,9 +21,60 @@ function makeInitialState() {
 
 export const state = $state(makeInitialState())
 
+// Plain (non-reactive) arrays — avoids any Svelte reactivity firing during dnd events
+const _past = []
+const _future = []
+
+// Small reactive object only for driving the UI button states
+const _ui = $state({ canUndo: false, canRedo: false })
+
+export function canUndo() { return _ui.canUndo }
+export function canRedo() { return _ui.canRedo }
+
+function snapshot() {
+  return $state.snapshot({
+    groups: state.groups,
+    thirdPlaceAssignments: state.thirdPlaceAssignments,
+    matchWinners: state.matchWinners,
+  })
+}
+
+function applySnapshot(snap) {
+  state.groups = structuredClone(snap.groups)
+  state.thirdPlaceAssignments = structuredClone(snap.thirdPlaceAssignments)
+  state.matchWinners = structuredClone(snap.matchWinners)
+}
+
+export function pushSnapshot() {
+  _past.push(snapshot())
+  _future.length = 0
+  _ui.canUndo = true
+  _ui.canRedo = false
+}
+
+export function undo() {
+  if (!_past.length) return
+  _future.unshift(snapshot())
+  applySnapshot(_past.pop())
+  _ui.canUndo = _past.length > 0
+  _ui.canRedo = true
+}
+
+export function redo() {
+  if (!_future.length) return
+  _past.push(snapshot())
+  applySnapshot(_future.shift())
+  _ui.canUndo = true
+  _ui.canRedo = _future.length > 0
+}
+
 export function resetState() {
   const fresh = makeInitialState()
   state.groups = fresh.groups
   state.thirdPlaceAssignments = fresh.thirdPlaceAssignments
   state.matchWinners = fresh.matchWinners
+  _past.length = 0
+  _future.length = 0
+  _ui.canUndo = false
+  _ui.canRedo = false
 }

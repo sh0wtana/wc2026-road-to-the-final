@@ -1,7 +1,7 @@
 <script>
   import BracketMatch from './BracketMatch.svelte'
   import TeamPicker from './TeamPicker.svelte'
-  import { state as appState } from '../store.svelte.js'
+  import { state as appState, pushSnapshot } from '../store.svelte.js'
   import { R32_MATCHES, R16_FEED, QF_FEED, SF_FEED, FINAL_FEED } from '../data/bracket.js'
   import { getR32Teams, getPostR32Teams, findTeamById, getEligibleThirdPlaceTeams } from '../lib/bracket.js'
 
@@ -33,11 +33,13 @@
   }
 
   function pickWinner(matchId, teamId) {
+    pushSnapshot()
     appState.matchWinners[matchId] = teamId
     clearDownstream(matchId)
   }
 
   function pickThirdPlace(slotKey, teamId) {
+    pushSnapshot()
     appState.thirdPlaceAssignments[slotKey] = teamId
     // Clear any R32 winner that depended on this slot
     R32_MATCHES.forEach(m => {
