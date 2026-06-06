@@ -352,9 +352,9 @@
             onclick={() => handlePickR32(mid, true)}
             class="flex-1 flex items-center gap-1.5 px-2 w-full text-left {r32RowClass(homeTeam, winner, canPick)}"
           >
-            {#if homeTeam}<span>{homeTeam.flag}</span><span class="truncate flex-1 font-semibold uppercase">{homeTeam.name}</span>
-            {:else}<span class="flex-1">—</span>{/if}
-            <span class="text-xs text-slate-200 font-bold shrink-0">{m?.home}</span>
+            <span class="text-xs text-slate-200 font-bold shrink-0 w-8">{m?.home}</span>
+            {#if homeTeam}<span>{homeTeam.flag}</span><span class="truncate font-semibold uppercase">{homeTeam.name}</span>
+            {:else}<span>—</span>{/if}
           </button>
           {#if ts.isThird && !appState.thirdPlaceAssignments[ts.slotKey]}
             <button
@@ -366,19 +366,19 @@
               onclick={() => handlePickR32(mid, false)}
               class="flex-1 flex items-center gap-1.5 px-2 w-full text-left {r32RowClass(awayTeam, winner, canPick)}"
             >
-              {#if awayTeam}<span>{awayTeam.flag}</span><span class="truncate flex-1 font-semibold uppercase">{awayTeam.name}</span>
-              {:else}<span class="flex-1">—</span>{/if}
               {#if ts.isThird}
                 <span
                   role="button"
                   tabindex="0"
                   onclick={(e) => { e.stopPropagation(); activeThirdSlot = ts.slotKey }}
-                  class="text-[9px] text-amber-600 hover:text-amber-300 shrink-0 cursor-pointer"
+                  class="text-[9px] text-amber-600 hover:text-amber-300 shrink-0 w-8 cursor-pointer"
                   title="Re-pick 3rd place team"
                 >↺</span>
               {:else}
-                <span class="text-xs text-slate-200 font-bold shrink-0">{m?.away}</span>
+                <span class="text-xs text-slate-200 font-bold shrink-0 w-8">{m?.away}</span>
               {/if}
+              {#if awayTeam}<span>{awayTeam.flag}</span><span class="truncate font-semibold uppercase">{awayTeam.name}</span>
+              {:else}<span>—</span>{/if}
             </button>
           {/if}
         </div>
