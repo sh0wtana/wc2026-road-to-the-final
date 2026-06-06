@@ -5,7 +5,7 @@
 
 <header class="flex items-center justify-between px-6 py-3 bg-surface border-b-2 border-amber-400">
   <div class="flex items-center gap-3">
-    <h1 class="text-lg font-bold tracking-wide text-slate-100">🏆 FIFA World Cup 2026 Simulator</h1>
+    <h1 class="text-lg font-bold tracking-wide text-slate-100">🏆 FIFA World Cup 2026 Road to the Final</h1>
     <div class="flex items-center gap-1">
       <button
         onclick={undo}
