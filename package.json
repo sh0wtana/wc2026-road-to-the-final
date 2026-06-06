@@ -16,6 +16,7 @@
     "vitest": "^3.2.6"
   },
   "dependencies": {
+    "canvas-confetti": "^1.9.4",
     "svelte-dnd-action": "^0.9.69"
   }
 }

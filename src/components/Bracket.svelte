@@ -1,4 +1,5 @@
 <script>
+  import confetti from 'canvas-confetti'
   import BracketMatch from './BracketMatch.svelte'
   import TeamPicker from './TeamPicker.svelte'
   import { state as appState, pushSnapshot } from '../store.svelte.js'
@@ -6,6 +7,37 @@
   import { getR32Teams, getPostR32Teams, findTeamById, getEligibleThirdPlaceTeams } from '../lib/bracket.js'
 
   let activeThirdSlot = $state(null)
+
+  $effect(() => {
+    if (appState.matchWinners['final']) {
+      launchConfetti()
+    }
+  })
+
+  function launchConfetti() {
+    const duration = 3500
+    const end = Date.now() + duration
+    const colors = ['#fbbf24', '#f59e0b', '#ffffff', '#34d399', '#60a5fa']
+
+    // Two cannons from the sides
+    ;(function frame() {
+      confetti({
+        particleCount: 5,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.6 },
+        colors,
+      })
+      confetti({
+        particleCount: 5,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.6 },
+        colors,
+      })
+      if (Date.now() < end) requestAnimationFrame(frame)
+    })()
+  }
 
   const r32 = $derived(
     Object.fromEntries(
