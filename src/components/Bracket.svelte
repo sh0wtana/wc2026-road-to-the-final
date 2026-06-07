@@ -31,6 +31,11 @@
     frame()
   }
 
+  $effect(() => {
+    if (appState.matchWinners['final']) launchConfetti()
+    return () => { cancelAnimationFrame(confettiRafId); confettiRafId = null }
+  })
+
   const r32 = $derived(
     Object.fromEntries(
       R32_MATCHES.map(m => [m.id, getR32Teams(m, appState.groups, appState.thirdPlaceAssignments)])
@@ -61,11 +66,12 @@
     return findTeamById(appState.matchWinners[id], appState.groups)
   }
 
+  const champion = $derived(winnerOf('final'))
+
   function pickWinner(matchId, teamId) {
     pushSnapshot()
     appState.matchWinners[matchId] = teamId
     clearDownstream(matchId)
-    if (matchId === 'final') launchConfetti()
   }
 
   function pickThirdPlace(slotKey, teamId) {
@@ -84,8 +90,8 @@
   function clearDownstream(matchId) {
     const allFeeds = {
       ...R16_FEED, ...QF_FEED, ...SF_FEED,
-      final: ['l-sf', 'r-sf'],
-      bronze: ['l-sf', 'r-sf'],
+      final: FINAL_FEED,
+      bronze: FINAL_FEED,
     }
     for (const [id, feeders] of Object.entries(allFeeds)) {
       if (feeders.includes(matchId)) {
@@ -119,8 +125,7 @@
   const RIGHT_QF  = ['r-qf-m1', 'r-qf-m2']
 
   // Read state fresh at click time — avoids stale @const closure values
-  function r32Away(mid) {
-    const ts = thirdSlotOf(mid)
+  function r32Away(mid, ts = thirdSlotOf(mid)) {
     return ts.isThird
       ? findTeamById(appState.thirdPlaceAssignments[ts.slotKey], appState.groups)
       : r32[mid]?.away ?? null
@@ -147,7 +152,7 @@
   {@const ts = thirdSlotOf(mid)}
   {@const m = r32Match(mid)}
   {@const homeTeam = r32[mid]?.home}
-  {@const awayTeam = r32Away(mid)}
+  {@const awayTeam = r32Away(mid, ts)}
   {@const winner = winnerOf(mid)}
   {@const canPick = !!homeTeam && !!awayTeam}
 
@@ -257,19 +262,17 @@
     <!-- CENTER: Final + Bronze -->
     <div class="relative w-36">
       <!-- Champion trophy + box: upper area -->
-      {#each [winnerOf('final')] as champion}
-        <div class="absolute inset-x-0 top-6 flex flex-col items-center gap-1">
-          <div class="text-xs font-bold tracking-widest uppercase text-amber-400">Champion</div>
-          <div class="text-5xl leading-none">🏆</div>
-          <div class="w-28 h-16 rounded-lg border-2 flex flex-col items-center justify-center
-            {champion ? 'border-amber-400 bg-amber-400/10' : 'border-slate-700 bg-slate-800/60 border-dashed'}">
-            {#if champion}
-              <div class="text-2xl">{champion.flag}</div>
-              <div class="text-xs font-extrabold text-amber-300 tracking-wider uppercase mt-0.5">{champion.name}</div>
-            {/if}
-          </div>
+      <div class="absolute inset-x-0 top-6 flex flex-col items-center gap-1">
+        <div class="text-xs font-bold tracking-widest uppercase text-amber-400">Champion</div>
+        <div class="text-5xl leading-none">🏆</div>
+        <div class="w-28 h-16 rounded-lg border-2 flex flex-col items-center justify-center
+          {champion ? 'border-amber-400 bg-amber-400/10' : 'border-slate-700 bg-slate-800/60 border-dashed'}">
+          {#if champion}
+            <div class="text-2xl">{champion.flag}</div>
+            <div class="text-xs font-extrabold text-amber-300 tracking-wider uppercase mt-0.5">{champion.name}</div>
+          {/if}
         </div>
-      {/each}
+      </div>
       <!-- Final label: positioned just above the centered card -->
       <div class="absolute inset-x-0 flex justify-center" style="top: calc(50% - 48px)">
         <div class="text-sm text-amber-400 font-bold uppercase tracking-widest">Final</div>

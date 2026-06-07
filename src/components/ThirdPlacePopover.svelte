@@ -1,13 +1,19 @@
 <script>
-  let { anchorRect, title, teams, onPick, onClose } = $props()
+  let { anchorRect, title, teams, onPick, onClose = () => {} } = $props()
 
   const WIDTH = 210
   const ROW_HEIGHT = 44
+  const EMPTY_HEIGHT = 56
   const HEADER_HEIGHT = 36
   const GAP = 8
 
+  let dialogEl = $state(null)
   let winW = $state(window.innerWidth)
   let winH = $state(window.innerHeight)
+
+  $effect(() => {
+    dialogEl?.focus()
+  })
 
   $effect(() => {
     function onResize() {
@@ -20,12 +26,14 @@
 
   const style = $derived.by(() => {
     if (!anchorRect) return ''
-    const estimatedHeight = HEADER_HEIGHT + teams.length * ROW_HEIGHT + 16
+    const contentHeight = teams.length > 0 ? teams.length * ROW_HEIGHT : EMPTY_HEIGHT
+    const estimatedHeight = HEADER_HEIGHT + contentHeight + 16
     const isRightSide = anchorRect.left > winW / 2
 
-    const left = isRightSide
+    const rawLeft = isRightSide
       ? anchorRect.left - WIDTH - GAP
       : anchorRect.right + GAP
+    const left = Math.max(8, Math.min(winW - WIDTH - 8, rawLeft))
 
     const spaceBelow = winH - anchorRect.top
     const top = spaceBelow < estimatedHeight + 16
@@ -34,12 +42,30 @@
 
     return `top:${top}px; left:${left}px; width:${WIDTH}px;`
   })
+
+  function trapFocus(e) {
+    e.stopPropagation()
+    if (e.key === 'Escape') { onClose(); return }
+    if (e.key !== 'Tab' || !dialogEl) return
+    const focusable = [...dialogEl.querySelectorAll('button:not([disabled])')]
+    if (!focusable.length) return
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault()
+      last.focus()
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault()
+      first.focus()
+    }
+  }
 </script>
 
 <!-- backdrop for click-outside -->
 <div class="fixed inset-0 z-40" onclick={onClose} aria-hidden="true"></div>
 
 <div
+  bind:this={dialogEl}
   style={style}
   class="fixed z-50 bg-surface border border-border-subtle rounded-xl p-3 shadow-2xl"
   role="dialog"
@@ -47,7 +73,7 @@
   aria-label={title}
   tabindex="-1"
   onclick={(e) => e.stopPropagation()}
-  onkeydown={(e) => e.stopPropagation()}
+  onkeydown={trapFocus}
 >
   <p class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2">{title}</p>
   <div class="flex flex-col gap-1.5">
