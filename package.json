@@ -6,13 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
+    "preview": "npm run build && wrangler dev",
     "test": "vitest",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "deploy": "npm run build && wrangler deploy"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.40.0",
     "@eslint/js": "^9.39.4",
     "@sveltejs/vite-plugin-svelte": "^7.1.2",
     "@tailwindcss/vite": "^4.3.0",
@@ -24,7 +26,8 @@
     "prettier-plugin-svelte": "^4.1.0",
     "svelte": "^5.55.5",
     "vite": "^8.0.12",
-    "vitest": "^3.2.6"
+    "vitest": "^3.2.6",
+    "wrangler": "^4.98.0"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",
