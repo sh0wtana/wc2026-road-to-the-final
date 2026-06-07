@@ -13,9 +13,9 @@ export function getEligibleThirdPlaceTeams(slotKey, groups) {
 
 export function findTeamById(id, groups) {
   if (!id) return null
-  for (const group of Object.values(groups)) {
+  for (const [key, group] of Object.entries(groups)) {
     const t = group.find(t => t.id === id)
-    if (t) return t
+    if (t) return { ...t, group: key }
   }
   return null
 }

@@ -8,41 +8,27 @@
 
   let activeThirdSlot = $state(null)
   let anchorRect = $state(null)
+  let confettiRafId = null
 
   function openThirdSlot(slotKey, el) {
     anchorRect = el.getBoundingClientRect()
     activeThirdSlot = slotKey
   }
 
-  $effect(() => {
-    if (appState.matchWinners['final']) {
-      launchConfetti()
-    }
-  })
-
   function launchConfetti() {
+    if (confettiRafId) {
+      cancelAnimationFrame(confettiRafId)
+      confettiRafId = null
+    }
     const duration = 3500
     const end = Date.now() + duration
     const colors = ['#fbbf24', '#f59e0b', '#ffffff', '#34d399', '#60a5fa']
-
-    // Two cannons from the sides
-    ;(function frame() {
-      confetti({
-        particleCount: 5,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0, y: 0.6 },
-        colors,
-      })
-      confetti({
-        particleCount: 5,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1, y: 0.6 },
-        colors,
-      })
-      if (Date.now() < end) requestAnimationFrame(frame)
-    })()
+    function frame() {
+      confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors })
+      confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors })
+      confettiRafId = Date.now() < end ? requestAnimationFrame(frame) : null
+    }
+    frame()
   }
 
   const r32 = $derived(
@@ -66,6 +52,11 @@
     )
   }
 
+  // Derived once — reused by SF columns, bronzeTeams, and Final
+  const lSF = $derived(matchTeams('l-sf'))
+  const rSF = $derived(matchTeams('r-sf'))
+  const finalMatch = $derived(matchTeams('final'))
+
   function winnerOf(id) {
     return findTeamById(appState.matchWinners[id], appState.groups)
   }
@@ -74,6 +65,7 @@
     pushSnapshot()
     appState.matchWinners[matchId] = teamId
     clearDownstream(matchId)
+    if (matchId === 'final') launchConfetti()
   }
 
   function pickThirdPlace(slotKey, teamId) {
@@ -112,8 +104,8 @@
   const bronzeTeams = $derived.by(() => {
     const lw = appState.matchWinners['l-sf']
     const rw = appState.matchWinners['r-sf']
-    const { home: lh, away: la } = matchTeams('l-sf')
-    const { home: rh, away: ra } = matchTeams('r-sf')
+    const { home: lh, away: la } = lSF
+    const { home: rh, away: ra } = rSF
     const lLoser = lw && lh && la ? (lh.id === lw ? la : lh) : null
     const rLoser = rw && rh && ra ? (rh.id === rw ? ra : rh) : null
     return { home: lLoser, away: rLoser }
@@ -141,13 +133,6 @@
     pickWinner(mid, isHome ? home.id : away.id)
   }
 
-  function teamGroup(teamId) {
-    for (const [g, teams] of Object.entries(appState.groups)) {
-      if (teams.some(t => t.id === teamId)) return g
-    }
-    return '?'
-  }
-
   function r32RowClass(team, winner, canPick) {
     if (!team) return 'text-slate-600 cursor-default'
     if (winner) return winner.id === team.id
@@ -157,6 +142,53 @@
     return 'text-slate-100 cursor-default'
   }
 </script>
+
+{#snippet r32MatchSlot(mid)}
+  {@const ts = thirdSlotOf(mid)}
+  {@const m = r32Match(mid)}
+  {@const homeTeam = r32[mid]?.home}
+  {@const awayTeam = r32Away(mid)}
+  {@const winner = winnerOf(mid)}
+  {@const canPick = !!homeTeam && !!awayTeam}
+
+  <div class="rounded border overflow-hidden text-sm divide-y divide-slate-700 flex flex-col {winner || canPick ? 'border-slate-500' : 'border-slate-600'}">
+    <button
+      onclick={() => handlePickR32(mid, true)}
+      class="flex-1 flex items-center gap-1.5 px-2 w-full text-left {r32RowClass(homeTeam, winner, canPick)}"
+    >
+      <span class="text-xs text-slate-200 font-bold shrink-0 w-8">{m?.home}</span>
+      {#if homeTeam}<span>{homeTeam.flag}</span><span class="truncate font-semibold uppercase">{homeTeam.name}</span>
+      {:else}<span>—</span>{/if}
+    </button>
+    {#if ts.isThird && !appState.thirdPlaceAssignments[ts.slotKey]}
+      <button
+        onclick={(e) => openThirdSlot(ts.slotKey, e.currentTarget)}
+        class="flex-1 flex items-center justify-center text-sm text-amber-500 hover:text-amber-300 cursor-pointer w-full font-semibold animate-pulse"
+      >{ts.slotKey}</button>
+    {:else}
+      <div class="flex-1 flex items-stretch">
+        <button
+          onclick={() => handlePickR32(mid, false)}
+          class="flex-1 flex items-center gap-1.5 px-2 text-left {r32RowClass(awayTeam, winner, canPick)}"
+        >
+          <span class="text-xs text-slate-200 font-bold shrink-0 w-8">
+            {#if ts.isThird}3{awayTeam?.group ?? '?'}{:else}{m?.away}{/if}
+          </span>
+          {#if awayTeam}<span>{awayTeam.flag}</span><span class="truncate font-semibold uppercase">{awayTeam.name}</span>
+          {:else}<span>—</span>{/if}
+        </button>
+        {#if ts.isThird}
+          <button
+            onclick={(e) => openThirdSlot(ts.slotKey, e.currentTarget)}
+            class="px-1.5 text-amber-600 hover:text-amber-300 shrink-0 border-l border-slate-700 flex items-center"
+            title="Re-pick 3rd place team"
+            aria-label="Re-pick 3rd place team for {ts.slotKey}"
+          >↺</button>
+        {/if}
+      </div>
+    {/if}
+  </div>
+{/snippet}
 
 <section class="flex-1 flex justify-center min-h-0 py-2 overflow-hidden">
   <div class="flex flex-col min-h-0" style="width: 1360px">
@@ -179,51 +211,7 @@
     <!-- LEFT R32: 8 interactive match slots -->
     <div class="flex flex-col justify-around w-56 pr-2 border-r border-border-subtle">
       {#each LEFT_R32 as mid}
-        {@const ts = thirdSlotOf(mid)}
-        {@const m = r32Match(mid)}
-        {@const homeTeam = r32[mid]?.home}
-        {@const awayTeam = r32Away(mid)}
-        {@const winner = winnerOf(mid)}
-        {@const canPick = !!homeTeam && !!awayTeam}
-
-        <div class="rounded border overflow-hidden text-sm divide-y divide-slate-700 flex flex-col {winner ? 'border-slate-500' : canPick ? 'border-slate-500' : 'border-slate-600'}">
-          <button
-            onclick={() => handlePickR32(mid, true)}
-            class="flex-1 flex items-center gap-1.5 px-2 w-full text-left {r32RowClass(homeTeam, winner, canPick)}"
-          >
-            <span class="text-xs text-slate-200 font-bold shrink-0 w-8">{m?.home}</span>
-            {#if homeTeam}<span>{homeTeam.flag}</span><span class="truncate font-semibold uppercase">{homeTeam.name}</span>
-            {:else}<span>—</span>{/if}
-          </button>
-          {#if ts.isThird && !appState.thirdPlaceAssignments[ts.slotKey]}
-            <button
-              onclick={(e) => openThirdSlot(ts.slotKey, e.currentTarget)}
-              class="flex-1 flex items-center justify-center text-sm text-amber-500 hover:text-amber-300 cursor-pointer w-full font-semibold animate-pulse"
-            >{ts.slotKey}</button>
-          {:else}
-            <button
-              onclick={() => handlePickR32(mid, false)}
-              class="flex-1 flex items-center gap-1.5 px-2 w-full text-left {r32RowClass(awayTeam, winner, canPick)}"
-            >
-              {#if ts.isThird}
-                <span class="text-xs text-slate-200 font-bold shrink-0 w-8">3{teamGroup(appState.thirdPlaceAssignments[ts.slotKey])}</span>
-              {:else}
-                <span class="text-xs text-slate-200 font-bold shrink-0 w-8">{m?.away}</span>
-              {/if}
-              {#if awayTeam}<span>{awayTeam.flag}</span><span class="truncate font-semibold uppercase">{awayTeam.name}</span>
-              {:else}<span>—</span>{/if}
-              {#if ts.isThird}
-                <span
-                  role="button"
-                  tabindex="0"
-                  onclick={(e) => { e.stopPropagation(); openThirdSlot(ts.slotKey, e.currentTarget.closest('button') ?? e.currentTarget) }}
-                  class="text-xs text-amber-600 hover:text-amber-300 ml-auto cursor-pointer"
-                  title="Re-pick 3rd place team"
-                >↺</span>
-              {/if}
-            </button>
-          {/if}
-        </div>
+        {@render r32MatchSlot(mid)}
       {/each}
     </div>
 
@@ -257,15 +245,13 @@
 
     <!-- LEFT SF -->
     <div class="flex flex-col justify-around w-32 px-2 border-r border-border-subtle">
-      {#each [matchTeams('l-sf')] as { home, away }}
-        <BracketMatch
-          matchId="l-sf"
-          homeTeam={home}
-          awayTeam={away}
-          winnerTeam={winnerOf('l-sf')}
-          onPickWinner={pickWinner}
-        />
-      {/each}
+      <BracketMatch
+        matchId="l-sf"
+        homeTeam={lSF.home}
+        awayTeam={lSF.away}
+        winnerTeam={winnerOf('l-sf')}
+        onPickWinner={pickWinner}
+      />
     </div>
 
     <!-- CENTER: Final + Bronze -->
@@ -292,8 +278,8 @@
       <div class="absolute inset-x-0 px-2" style="top: 50%; transform: translateY(-50%)">
         <BracketMatch
           matchId="final"
-          homeTeam={matchTeams('final').home}
-          awayTeam={matchTeams('final').away}
+          homeTeam={finalMatch.home}
+          awayTeam={finalMatch.away}
           winnerTeam={winnerOf('final')}
           isFinal={true}
           onPickWinner={pickWinner}
@@ -314,15 +300,13 @@
 
     <!-- RIGHT SF -->
     <div class="flex flex-col justify-around w-32 px-2 border-l border-border-subtle">
-      {#each [matchTeams('r-sf')] as { home, away }}
-        <BracketMatch
-          matchId="r-sf"
-          homeTeam={home}
-          awayTeam={away}
-          winnerTeam={winnerOf('r-sf')}
-          onPickWinner={pickWinner}
-        />
-      {/each}
+      <BracketMatch
+        matchId="r-sf"
+        homeTeam={rSF.home}
+        awayTeam={rSF.away}
+        winnerTeam={winnerOf('r-sf')}
+        onPickWinner={pickWinner}
+      />
     </div>
 
     <!-- RIGHT QF: 2 matches -->
@@ -356,51 +340,7 @@
     <!-- RIGHT R32: 8 interactive match slots (mirrored) -->
     <div class="flex flex-col justify-around w-56 pl-2 border-l border-border-subtle">
       {#each RIGHT_R32 as mid}
-        {@const ts = thirdSlotOf(mid)}
-        {@const m = r32Match(mid)}
-        {@const homeTeam = r32[mid]?.home}
-        {@const awayTeam = r32Away(mid)}
-        {@const winner = winnerOf(mid)}
-        {@const canPick = !!homeTeam && !!awayTeam}
-
-        <div class="rounded border overflow-hidden text-sm divide-y divide-slate-700 flex flex-col {winner ? 'border-slate-500' : canPick ? 'border-slate-500' : 'border-slate-600'}">
-          <button
-            onclick={() => handlePickR32(mid, true)}
-            class="flex-1 flex items-center gap-1.5 px-2 w-full text-left {r32RowClass(homeTeam, winner, canPick)}"
-          >
-            <span class="text-xs text-slate-200 font-bold shrink-0 w-8">{m?.home}</span>
-            {#if homeTeam}<span>{homeTeam.flag}</span><span class="truncate font-semibold uppercase">{homeTeam.name}</span>
-            {:else}<span>—</span>{/if}
-          </button>
-          {#if ts.isThird && !appState.thirdPlaceAssignments[ts.slotKey]}
-            <button
-              onclick={(e) => openThirdSlot(ts.slotKey, e.currentTarget)}
-              class="flex-1 flex items-center justify-center text-sm text-amber-500 hover:text-amber-300 cursor-pointer w-full font-semibold animate-pulse"
-            >{ts.slotKey}</button>
-          {:else}
-            <button
-              onclick={() => handlePickR32(mid, false)}
-              class="flex-1 flex items-center gap-1.5 px-2 w-full text-left {r32RowClass(awayTeam, winner, canPick)}"
-            >
-              {#if ts.isThird}
-                <span class="text-xs text-slate-200 font-bold shrink-0 w-8">3{teamGroup(appState.thirdPlaceAssignments[ts.slotKey])}</span>
-              {:else}
-                <span class="text-xs text-slate-200 font-bold shrink-0 w-8">{m?.away}</span>
-              {/if}
-              {#if awayTeam}<span>{awayTeam.flag}</span><span class="truncate font-semibold uppercase">{awayTeam.name}</span>
-              {:else}<span>—</span>{/if}
-              {#if ts.isThird}
-                <span
-                  role="button"
-                  tabindex="0"
-                  onclick={(e) => { e.stopPropagation(); openThirdSlot(ts.slotKey, e.currentTarget.closest('button') ?? e.currentTarget) }}
-                  class="text-xs text-amber-600 hover:text-amber-300 ml-auto cursor-pointer"
-                  title="Re-pick 3rd place team"
-                >↺</span>
-              {/if}
-            </button>
-          {/if}
-        </div>
+        {@render r32MatchSlot(mid)}
       {/each}
     </div>
 

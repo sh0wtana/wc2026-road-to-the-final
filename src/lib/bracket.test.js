@@ -25,8 +25,8 @@ describe('getEligibleThirdPlaceTeams', () => {
   it('returns 3rd-place teams from eligible groups', () => {
     const result = getEligibleThirdPlaceTeams('3ABCDF', DEFAULT_GROUPS)
     expect(result).toHaveLength(5)
-    expect(result[0]).toEqual(DEFAULT_GROUPS.A[2])
-    expect(result[4]).toEqual(DEFAULT_GROUPS.F[2])
+    expect(result[0]).toEqual({ ...DEFAULT_GROUPS.A[2], group: 'A' })
+    expect(result[4]).toEqual({ ...DEFAULT_GROUPS.F[2], group: 'F' })
   })
   it('excludes groups not in the slot key', () => {
     const result = getEligibleThirdPlaceTeams('3ABCDF', DEFAULT_GROUPS)
@@ -37,7 +37,7 @@ describe('getEligibleThirdPlaceTeams', () => {
 
 describe('findTeamById', () => {
   it('finds a team across all groups', () => {
-    expect(findTeamById('BRA', DEFAULT_GROUPS)).toEqual(DEFAULT_GROUPS.C[0])
+    expect(findTeamById('BRA', DEFAULT_GROUPS)).toEqual({ ...DEFAULT_GROUPS.C[0], group: 'C' })
   })
   it('returns null for unknown id', () => {
     expect(findTeamById('ZZZ', DEFAULT_GROUPS)).toBe(null)
@@ -63,7 +63,7 @@ describe('getR32Teams', () => {
       DEFAULT_GROUPS,
       { '3ABCDF': 'KOR' }
     )
-    expect(away).toEqual(DEFAULT_GROUPS.A[2])
+    expect(away).toEqual({ ...DEFAULT_GROUPS.A[2], group: 'A' })
   })
   it('returns null for unassigned 3rd-place slot', () => {
     const { away } = getR32Teams(
