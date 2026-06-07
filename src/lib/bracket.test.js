@@ -82,9 +82,51 @@ describe('getPostR32Teams', () => {
     expect(home.id).toBe('GER')
     expect(away.id).toBe('FRA')
   })
+
   it('returns null when a feeder has no winner yet', () => {
     const matchWinners = { m1: 'GER', m2: null }
     const { away } = getPostR32Teams('l-r16-m1', matchWinners, R16_FEED, QF_FEED, SF_FEED, DEFAULT_GROUPS)
     expect(away).toBe(null)
+  })
+
+  it('resolves QF match from R16 winners', () => {
+    const matchWinners = { 'l-r16-m1': 'GER', 'l-r16-m2': 'ESP' }
+    const { home, away } = getPostR32Teams('l-qf-m1', matchWinners, R16_FEED, QF_FEED, SF_FEED, DEFAULT_GROUPS)
+    expect(home.id).toBe('GER')
+    expect(away.id).toBe('ESP')
+  })
+
+  it('resolves SF match from QF winners', () => {
+    const matchWinners = {
+      m1: 'GER', m2: 'FRA', m3: 'ESP', m4: 'BRA',
+      m5: 'ARG', m6: 'ENG', m7: 'POR', m8: 'NED',
+      'l-r16-m1': 'GER', 'l-r16-m2': 'ESP', 'l-r16-m3': 'ARG', 'l-r16-m4': 'POR',
+      'l-qf-m1': 'GER', 'l-qf-m2': 'ARG',
+    }
+    const { home, away } = getPostR32Teams('l-sf', matchWinners, R16_FEED, QF_FEED, SF_FEED, DEFAULT_GROUPS)
+    expect(home.id).toBe('GER')
+    expect(away.id).toBe('ARG')
+  })
+
+  it('returns both null for an unknown matchId', () => {
+    const { home, away } = getPostR32Teams('unknown', {}, R16_FEED, QF_FEED, SF_FEED, DEFAULT_GROUPS)
+    expect(home).toBe(null)
+    expect(away).toBe(null)
+  })
+})
+
+describe('getEligibleThirdPlaceTeams', () => {
+  it('returns teams in group order matching the slot key', () => {
+    const result = getEligibleThirdPlaceTeams('3ABCDF', DEFAULT_GROUPS)
+    const groups = result.map(t => t.group)
+    expect(groups).toEqual(['A','B','C','D','F'])
+  })
+
+  it('always attaches the group property', () => {
+    const result = getEligibleThirdPlaceTeams('3DEIJL', DEFAULT_GROUPS)
+    for (const team of result) {
+      expect(team).toHaveProperty('group')
+      expect('ABCDEFGHIJKL').toContain(team.group)
+    }
   })
 })
