@@ -12,7 +12,9 @@
     class="bg-surface border border-border-subtle rounded-xl p-5 min-w-[230px] shadow-2xl"
     onclick={(e) => e.stopPropagation()}
   >
-    <p class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-3">{title}</p>
+    <p class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-3">
+      {title}
+    </p>
     <div class="flex flex-col gap-2">
       {#each teams as team (team.id)}
         <button
@@ -21,7 +23,9 @@
         >
           <span class="text-xl">{team.flag}</span>
           <span class="font-semibold">{team.name}</span>
-          <span class="ml-auto text-xs opacity-60 font-normal">Group {team.group}</span>
+          <span class="ml-auto text-xs opacity-60 font-normal"
+            >Group {team.group}</span
+          >
         </button>
       {/each}
     </div>

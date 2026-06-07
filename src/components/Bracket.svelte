@@ -3,8 +3,19 @@
   import BracketMatch from './BracketMatch.svelte'
   import ThirdPlacePopover from './ThirdPlacePopover.svelte'
   import { state as appState, pushSnapshot } from '../store.svelte.js'
-  import { R32_MATCHES, R16_FEED, QF_FEED, SF_FEED, FINAL_FEED } from '../data/bracket.js'
-  import { getR32Teams, getPostR32Teams, findTeamById, getEligibleThirdPlaceTeams } from '../lib/bracket.js'
+  import {
+    R32_MATCHES,
+    R16_FEED,
+    QF_FEED,
+    SF_FEED,
+    FINAL_FEED,
+  } from '../data/bracket.js'
+  import {
+    getR32Teams,
+    getPostR32Teams,
+    findTeamById,
+    getEligibleThirdPlaceTeams,
+  } from '../lib/bracket.js'
 
   let activeThirdSlot = $state(null)
   let anchorRect = $state(null)
@@ -24,8 +35,20 @@
     const end = Date.now() + duration
     const colors = ['#fbbf24', '#f59e0b', '#ffffff', '#34d399', '#60a5fa']
     function frame() {
-      confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors })
-      confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors })
+      confetti({
+        particleCount: 5,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.6 },
+        colors,
+      })
+      confetti({
+        particleCount: 5,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.6 },
+        colors,
+      })
       confettiRafId = Date.now() < end ? requestAnimationFrame(frame) : null
     }
     frame()
@@ -33,17 +56,23 @@
 
   $effect(() => {
     if (appState.matchWinners['final']) launchConfetti()
-    return () => { cancelAnimationFrame(confettiRafId); confettiRafId = null }
+    return () => {
+      cancelAnimationFrame(confettiRafId)
+      confettiRafId = null
+    }
   })
 
   const r32 = $derived(
     Object.fromEntries(
-      R32_MATCHES.map(m => [m.id, getR32Teams(m, appState.groups, appState.thirdPlaceAssignments)])
+      R32_MATCHES.map((m) => [
+        m.id,
+        getR32Teams(m, appState.groups, appState.thirdPlaceAssignments),
+      ])
     )
   )
 
   function r32Match(mid) {
-    return R32_MATCHES.find(m => m.id === mid)
+    return R32_MATCHES.find((m) => m.id === mid)
   }
 
   function matchTeams(id) {
@@ -78,7 +107,7 @@
     pushSnapshot()
     appState.thirdPlaceAssignments[slotKey] = teamId
     // Clear any R32 winner that depended on this slot
-    R32_MATCHES.forEach(m => {
+    R32_MATCHES.forEach((m) => {
       if (m.away === slotKey) {
         appState.matchWinners[m.id] = null
         clearDownstream(m.id)
@@ -89,7 +118,9 @@
 
   function clearDownstream(matchId) {
     const allFeeds = {
-      ...R16_FEED, ...QF_FEED, ...SF_FEED,
+      ...R16_FEED,
+      ...QF_FEED,
+      ...SF_FEED,
       final: FINAL_FEED,
       bronze: FINAL_FEED,
     }
@@ -102,7 +133,7 @@
   }
 
   function thirdSlotOf(matchId) {
-    const m = R32_MATCHES.find(m => m.id === matchId)
+    const m = R32_MATCHES.find((m) => m.id === matchId)
     if (m?.away.startsWith('3')) return { isThird: true, slotKey: m.away }
     return { isThird: false, slotKey: '' }
   }
@@ -117,18 +148,21 @@
     return { home: lLoser, away: rLoser }
   })
 
-  const LEFT_R32  = ['m1','m2','m3','m4','m5','m6','m7','m8']
-  const RIGHT_R32 = ['m9','m10','m11','m12','m13','m14','m15','m16']
-  const LEFT_R16  = ['l-r16-m1', 'l-r16-m2', 'l-r16-m3', 'l-r16-m4']
+  const LEFT_R32 = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8']
+  const RIGHT_R32 = ['m9', 'm10', 'm11', 'm12', 'm13', 'm14', 'm15', 'm16']
+  const LEFT_R16 = ['l-r16-m1', 'l-r16-m2', 'l-r16-m3', 'l-r16-m4']
   const RIGHT_R16 = ['r-r16-m1', 'r-r16-m2', 'r-r16-m3', 'r-r16-m4']
-  const LEFT_QF   = ['l-qf-m1', 'l-qf-m2']
-  const RIGHT_QF  = ['r-qf-m1', 'r-qf-m2']
+  const LEFT_QF = ['l-qf-m1', 'l-qf-m2']
+  const RIGHT_QF = ['r-qf-m1', 'r-qf-m2']
 
   // Read state fresh at click time — avoids stale @const closure values
   function r32Away(mid, ts = thirdSlotOf(mid)) {
     return ts.isThird
-      ? findTeamById(appState.thirdPlaceAssignments[ts.slotKey], appState.groups)
-      : r32[mid]?.away ?? null
+      ? findTeamById(
+          appState.thirdPlaceAssignments[ts.slotKey],
+          appState.groups
+        )
+      : (r32[mid]?.away ?? null)
   }
 
   function handlePickR32(mid, isHome) {
@@ -140,10 +174,12 @@
 
   function r32RowClass(team, winner, canPick) {
     if (!team) return 'text-slate-600 cursor-default'
-    if (winner) return winner.id === team.id
-      ? 'text-amber-300 font-medium cursor-default'
-      : 'text-slate-500 hover:text-amber-300 hover:bg-surface-hover cursor-pointer transition-colors'
-    if (canPick) return 'text-slate-100 hover:text-amber-300 hover:bg-surface-hover cursor-pointer transition-colors'
+    if (winner)
+      return winner.id === team.id
+        ? 'text-amber-300 font-medium cursor-default'
+        : 'text-slate-500 hover:text-amber-300 hover:bg-surface-hover cursor-pointer transition-colors'
+    if (canPick)
+      return 'text-slate-100 hover:text-amber-300 hover:bg-surface-hover cursor-pointer transition-colors'
     return 'text-slate-100 cursor-default'
   }
 </script>
@@ -156,30 +192,50 @@
   {@const winner = winnerOf(mid)}
   {@const canPick = !!homeTeam && !!awayTeam}
 
-  <div class="rounded border overflow-hidden text-sm divide-y divide-slate-700 flex flex-col {winner || canPick ? 'border-slate-500' : 'border-slate-600'}">
+  <div
+    class="rounded border overflow-hidden text-sm divide-y divide-slate-700 flex flex-col {winner ||
+    canPick
+      ? 'border-slate-500'
+      : 'border-slate-600'}"
+  >
     <button
       onclick={() => handlePickR32(mid, true)}
-      class="flex-1 flex items-center gap-1.5 px-2 w-full text-left {r32RowClass(homeTeam, winner, canPick)}"
+      class="flex-1 flex items-center gap-1.5 px-2 w-full text-left {r32RowClass(
+        homeTeam,
+        winner,
+        canPick
+      )}"
     >
-      <span class="text-xs text-slate-200 font-bold shrink-0 w-8">{m?.home}</span>
-      {#if homeTeam}<span>{homeTeam.flag}</span><span class="truncate font-semibold uppercase">{homeTeam.name}</span>
+      <span class="text-xs text-slate-200 font-bold shrink-0 w-8"
+        >{m?.home}</span
+      >
+      {#if homeTeam}<span>{homeTeam.flag}</span><span
+          class="truncate font-semibold uppercase">{homeTeam.name}</span
+        >
       {:else}<span>—</span>{/if}
     </button>
     {#if ts.isThird && !appState.thirdPlaceAssignments[ts.slotKey]}
       <button
         onclick={(e) => openThirdSlot(ts.slotKey, e.currentTarget)}
         class="flex-1 flex items-center justify-center text-sm text-amber-500 hover:text-amber-300 cursor-pointer w-full font-semibold animate-pulse"
-      >{ts.slotKey}</button>
+        >{ts.slotKey}</button
+      >
     {:else}
       <div class="flex-1 flex items-stretch">
         <button
           onclick={() => handlePickR32(mid, false)}
-          class="flex-1 flex items-center gap-1.5 px-2 text-left {r32RowClass(awayTeam, winner, canPick)}"
+          class="flex-1 flex items-center gap-1.5 px-2 text-left {r32RowClass(
+            awayTeam,
+            winner,
+            canPick
+          )}"
         >
           <span class="text-xs text-slate-200 font-bold shrink-0 w-8">
             {#if ts.isThird}3{awayTeam?.group ?? '?'}{:else}{m?.away}{/if}
           </span>
-          {#if awayTeam}<span>{awayTeam.flag}</span><span class="truncate font-semibold uppercase">{awayTeam.name}</span>
+          {#if awayTeam}<span>{awayTeam.flag}</span><span
+              class="truncate font-semibold uppercase">{awayTeam.name}</span
+            >
           {:else}<span>—</span>{/if}
         </button>
         {#if ts.isThird}
@@ -187,8 +243,8 @@
             onclick={(e) => openThirdSlot(ts.slotKey, e.currentTarget)}
             class="px-1.5 text-amber-600 hover:text-amber-300 shrink-0 border-l border-slate-700 flex items-center"
             title="Re-pick 3rd place team"
-            aria-label="Re-pick 3rd place team for {ts.slotKey}"
-          >↺</button>
+            aria-label="Re-pick 3rd place team for {ts.slotKey}">↺</button
+          >
         {/if}
       </div>
     {/if}
@@ -197,157 +253,200 @@
 
 <section class="flex-1 flex justify-center min-h-0 py-2 overflow-hidden">
   <div class="flex flex-col min-h-0" style="width: 1360px">
-
-  <!-- Round headers -->
-  <div class="flex mb-3 text-xs uppercase tracking-widest text-amber-400 font-bold select-none">
-    <div class="w-56 text-center">R32</div>
-    <div class="w-32 text-center">R16</div>
-    <div class="w-32 text-center">QF</div>
-    <div class="w-32 text-center">SF</div>
-    <div class="w-36 text-center">Final</div>
-    <div class="w-32 text-center">SF</div>
-    <div class="w-32 text-center">QF</div>
-    <div class="w-32 text-center">R16</div>
-    <div class="w-56 text-center">R32</div>
-  </div>
-
-  <div class="flex flex-1 min-h-0 items-stretch">
-
-    <!-- LEFT R32: 8 interactive match slots -->
-    <div class="flex flex-col justify-around w-56 pr-2 border-r border-border-subtle">
-      {#each LEFT_R32 as mid}
-        {@render r32MatchSlot(mid)}
-      {/each}
+    <!-- Round headers -->
+    <div
+      class="flex mb-3 text-xs uppercase tracking-widest text-amber-400 font-bold select-none"
+    >
+      <div class="w-56 text-center">R32</div>
+      <div class="w-32 text-center">R16</div>
+      <div class="w-32 text-center">QF</div>
+      <div class="w-32 text-center">SF</div>
+      <div class="w-36 text-center">Final</div>
+      <div class="w-32 text-center">SF</div>
+      <div class="w-32 text-center">QF</div>
+      <div class="w-32 text-center">R16</div>
+      <div class="w-56 text-center">R32</div>
     </div>
 
-    <!-- LEFT R16: 4 matches -->
-    <div class="flex flex-col justify-around w-32 px-2 border-r border-border-subtle">
-      {#each LEFT_R16 as mid}
-        {@const { home, away } = matchTeams(mid)}
+    <div class="flex flex-1 min-h-0 items-stretch">
+      <!-- LEFT R32: 8 interactive match slots -->
+      <div
+        class="flex flex-col justify-around w-56 pr-2 border-r border-border-subtle"
+      >
+        {#each LEFT_R32 as mid (mid)}
+          {@render r32MatchSlot(mid)}
+        {/each}
+      </div>
+
+      <!-- LEFT R16: 4 matches -->
+      <div
+        class="flex flex-col justify-around w-32 px-2 border-r border-border-subtle"
+      >
+        {#each LEFT_R16 as mid (mid)}
+          {@const { home, away } = matchTeams(mid)}
+          <BracketMatch
+            matchId={mid}
+            homeTeam={home}
+            awayTeam={away}
+            winnerTeam={winnerOf(mid)}
+            onPickWinner={pickWinner}
+          />
+        {/each}
+      </div>
+
+      <!-- LEFT QF: 2 matches -->
+      <div
+        class="flex flex-col justify-around w-32 px-2 border-r border-border-subtle"
+      >
+        {#each LEFT_QF as mid (mid)}
+          {@const { home, away } = matchTeams(mid)}
+          <BracketMatch
+            matchId={mid}
+            homeTeam={home}
+            awayTeam={away}
+            winnerTeam={winnerOf(mid)}
+            onPickWinner={pickWinner}
+          />
+        {/each}
+      </div>
+
+      <!-- LEFT SF -->
+      <div
+        class="flex flex-col justify-around w-32 px-2 border-r border-border-subtle"
+      >
         <BracketMatch
-          matchId={mid}
-          homeTeam={home}
-          awayTeam={away}
-          winnerTeam={winnerOf(mid)}
+          matchId="l-sf"
+          homeTeam={lSF.home}
+          awayTeam={lSF.away}
+          winnerTeam={winnerOf('l-sf')}
           onPickWinner={pickWinner}
         />
-      {/each}
-    </div>
+      </div>
 
-    <!-- LEFT QF: 2 matches -->
-    <div class="flex flex-col justify-around w-32 px-2 border-r border-border-subtle">
-      {#each LEFT_QF as mid}
-        {@const { home, away } = matchTeams(mid)}
-        <BracketMatch
-          matchId={mid}
-          homeTeam={home}
-          awayTeam={away}
-          winnerTeam={winnerOf(mid)}
-          onPickWinner={pickWinner}
-        />
-      {/each}
-    </div>
-
-    <!-- LEFT SF -->
-    <div class="flex flex-col justify-around w-32 px-2 border-r border-border-subtle">
-      <BracketMatch
-        matchId="l-sf"
-        homeTeam={lSF.home}
-        awayTeam={lSF.away}
-        winnerTeam={winnerOf('l-sf')}
-        onPickWinner={pickWinner}
-      />
-    </div>
-
-    <!-- CENTER: Final + Bronze -->
-    <div class="relative w-36">
-      <!-- Champion trophy + box: upper area -->
-      <div class="absolute inset-x-0 top-6 flex flex-col items-center gap-1">
-        <div class="text-xs font-bold tracking-widest uppercase text-amber-400">Champion</div>
-        <div class="text-5xl leading-none">🏆</div>
-        <div class="w-28 h-16 rounded-lg border-2 flex flex-col items-center justify-center
-          {champion ? 'border-amber-400 bg-amber-400/10' : 'border-slate-700 bg-slate-800/60 border-dashed'}">
-          {#if champion}
-            <div class="text-2xl">{champion.flag}</div>
-            <div class="text-xs font-extrabold text-amber-300 tracking-wider uppercase mt-0.5">{champion.name}</div>
-          {/if}
+      <!-- CENTER: Final + Bronze -->
+      <div class="relative w-36">
+        <!-- Champion trophy + box: upper area -->
+        <div class="absolute inset-x-0 top-6 flex flex-col items-center gap-1">
+          <div
+            class="text-xs font-bold tracking-widest uppercase text-amber-400"
+          >
+            Champion
+          </div>
+          <div class="text-5xl leading-none">🏆</div>
+          <div
+            class="w-28 h-16 rounded-lg border-2 flex flex-col items-center justify-center
+          {champion
+              ? 'border-amber-400 bg-amber-400/10'
+              : 'border-slate-700 bg-slate-800/60 border-dashed'}"
+          >
+            {#if champion}
+              <div class="text-2xl">{champion.flag}</div>
+              <div
+                class="text-xs font-extrabold text-amber-300 tracking-wider uppercase mt-0.5"
+              >
+                {champion.name}
+              </div>
+            {/if}
+          </div>
+        </div>
+        <!-- Final label: positioned just above the centered card -->
+        <div
+          class="absolute inset-x-0 flex justify-center"
+          style="top: calc(50% - 48px)"
+        >
+          <div
+            class="text-sm text-amber-400 font-bold uppercase tracking-widest"
+          >
+            Final
+          </div>
+        </div>
+        <!-- Final card: exactly centered to align with SFs -->
+        <div
+          class="absolute inset-x-0 px-2"
+          style="top: 50%; transform: translateY(-50%)"
+        >
+          <BracketMatch
+            matchId="final"
+            homeTeam={finalMatch.home}
+            awayTeam={finalMatch.away}
+            winnerTeam={winnerOf('final')}
+            isFinal={true}
+            onPickWinner={pickWinner}
+          />
+        </div>
+        <!-- 3rd Place Match: lower area -->
+        <div
+          class="absolute inset-x-0 bottom-24 flex flex-col items-center gap-1.5 px-2"
+        >
+          <div
+            class="text-[10px] text-slate-100 font-bold uppercase tracking-widest"
+          >
+            3rd Place Match
+          </div>
+          <BracketMatch
+            matchId="bronze"
+            homeTeam={bronzeTeams.home}
+            awayTeam={bronzeTeams.away}
+            winnerTeam={winnerOf('bronze')}
+            onPickWinner={pickWinner}
+          />
         </div>
       </div>
-      <!-- Final label: positioned just above the centered card -->
-      <div class="absolute inset-x-0 flex justify-center" style="top: calc(50% - 48px)">
-        <div class="text-sm text-amber-400 font-bold uppercase tracking-widest">Final</div>
-      </div>
-      <!-- Final card: exactly centered to align with SFs -->
-      <div class="absolute inset-x-0 px-2" style="top: 50%; transform: translateY(-50%)">
+
+      <!-- RIGHT SF -->
+      <div
+        class="flex flex-col justify-around w-32 px-2 border-l border-border-subtle"
+      >
         <BracketMatch
-          matchId="final"
-          homeTeam={finalMatch.home}
-          awayTeam={finalMatch.away}
-          winnerTeam={winnerOf('final')}
-          isFinal={true}
+          matchId="r-sf"
+          homeTeam={rSF.home}
+          awayTeam={rSF.away}
+          winnerTeam={winnerOf('r-sf')}
           onPickWinner={pickWinner}
         />
       </div>
-      <!-- 3rd Place Match: lower area -->
-      <div class="absolute inset-x-0 bottom-24 flex flex-col items-center gap-1.5 px-2">
-        <div class="text-[10px] text-slate-100 font-bold uppercase tracking-widest">3rd Place Match</div>
-        <BracketMatch
-          matchId="bronze"
-          homeTeam={bronzeTeams.home}
-          awayTeam={bronzeTeams.away}
-          winnerTeam={winnerOf('bronze')}
-          onPickWinner={pickWinner}
-        />
+
+      <!-- RIGHT QF: 2 matches -->
+      <div
+        class="flex flex-col justify-around w-32 px-2 border-l border-border-subtle"
+      >
+        {#each RIGHT_QF as mid (mid)}
+          {@const { home, away } = matchTeams(mid)}
+          <BracketMatch
+            matchId={mid}
+            homeTeam={home}
+            awayTeam={away}
+            winnerTeam={winnerOf(mid)}
+            onPickWinner={pickWinner}
+          />
+        {/each}
+      </div>
+
+      <!-- RIGHT R16: 4 matches -->
+      <div
+        class="flex flex-col justify-around w-32 px-2 border-l border-border-subtle"
+      >
+        {#each RIGHT_R16 as mid (mid)}
+          {@const { home, away } = matchTeams(mid)}
+          <BracketMatch
+            matchId={mid}
+            homeTeam={home}
+            awayTeam={away}
+            winnerTeam={winnerOf(mid)}
+            onPickWinner={pickWinner}
+          />
+        {/each}
+      </div>
+
+      <!-- RIGHT R32: 8 interactive match slots (mirrored) -->
+      <div
+        class="flex flex-col justify-around w-56 pl-2 border-l border-border-subtle"
+      >
+        {#each RIGHT_R32 as mid (mid)}
+          {@render r32MatchSlot(mid)}
+        {/each}
       </div>
     </div>
-
-    <!-- RIGHT SF -->
-    <div class="flex flex-col justify-around w-32 px-2 border-l border-border-subtle">
-      <BracketMatch
-        matchId="r-sf"
-        homeTeam={rSF.home}
-        awayTeam={rSF.away}
-        winnerTeam={winnerOf('r-sf')}
-        onPickWinner={pickWinner}
-      />
-    </div>
-
-    <!-- RIGHT QF: 2 matches -->
-    <div class="flex flex-col justify-around w-32 px-2 border-l border-border-subtle">
-      {#each RIGHT_QF as mid}
-        {@const { home, away } = matchTeams(mid)}
-        <BracketMatch
-          matchId={mid}
-          homeTeam={home}
-          awayTeam={away}
-          winnerTeam={winnerOf(mid)}
-          onPickWinner={pickWinner}
-        />
-      {/each}
-    </div>
-
-    <!-- RIGHT R16: 4 matches -->
-    <div class="flex flex-col justify-around w-32 px-2 border-l border-border-subtle">
-      {#each RIGHT_R16 as mid}
-        {@const { home, away } = matchTeams(mid)}
-        <BracketMatch
-          matchId={mid}
-          homeTeam={home}
-          awayTeam={away}
-          winnerTeam={winnerOf(mid)}
-          onPickWinner={pickWinner}
-        />
-      {/each}
-    </div>
-
-    <!-- RIGHT R32: 8 interactive match slots (mirrored) -->
-    <div class="flex flex-col justify-around w-56 pl-2 border-l border-border-subtle">
-      {#each RIGHT_R32 as mid}
-        {@render r32MatchSlot(mid)}
-      {/each}
-    </div>
-
-  </div>
   </div>
 </section>
 
@@ -361,8 +460,12 @@
   <ThirdPlacePopover
     {anchorRect}
     title="Assign {activeThirdSlot}"
-    teams={getEligibleThirdPlaceTeams(activeThirdSlot, appState.groups).filter(t => !usedIds.has(t.id))}
+    teams={getEligibleThirdPlaceTeams(activeThirdSlot, appState.groups).filter(
+      (t) => !usedIds.has(t.id)
+    )}
     onPick={(team) => pickThirdPlace(activeThirdSlot, team.id)}
-    onClose={() => { activeThirdSlot = null }}
+    onClose={() => {
+      activeThirdSlot = null
+    }}
   />
 {/if}
