@@ -4,13 +4,17 @@
 
 <div
   class="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
-  onclick={onClose}
+  onclick={() => onClose()}
+  onkeydown={(e) => e.key === 'Escape' && onClose()}
   role="dialog"
   aria-modal="true"
+  tabindex="-1"
 >
   <div
     class="bg-surface border border-border-subtle rounded-xl p-5 min-w-[230px] shadow-2xl"
     onclick={(e) => e.stopPropagation()}
+    onkeydown={(e) => e.stopPropagation()}
+    role="presentation"
   >
     <p class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-3">
       {title}

@@ -7,6 +7,7 @@
   const HEADER_HEIGHT = 36
   const GAP = 8
 
+  /** @type {HTMLDivElement | null} */
   let dialogEl = $state(null)
   let winW = $state(window.innerWidth)
   let winH = $state(window.innerHeight)
@@ -52,7 +53,9 @@
       return
     }
     if (e.key !== 'Tab' || !dialogEl) return
-    const focusable = [...dialogEl.querySelectorAll('button:not([disabled])')]
+    const focusable = /** @type {HTMLElement[]} */ ([
+      ...dialogEl.querySelectorAll('button:not([disabled])'),
+    ])
     if (!focusable.length) return
     const first = focusable[0]
     const last = focusable[focusable.length - 1]
@@ -67,7 +70,11 @@
 </script>
 
 <!-- backdrop for click-outside -->
-<div class="fixed inset-0 z-40" onclick={onClose} aria-hidden="true"></div>
+<div
+  class="fixed inset-0 z-40"
+  onclick={() => onClose()}
+  aria-hidden="true"
+></div>
 
 <div
   bind:this={dialogEl}
