@@ -26,7 +26,8 @@
 
   const style = $derived.by(() => {
     if (!anchorRect) return ''
-    const contentHeight = teams.length > 0 ? teams.length * ROW_HEIGHT : EMPTY_HEIGHT
+    const contentHeight =
+      teams.length > 0 ? teams.length * ROW_HEIGHT : EMPTY_HEIGHT
     const estimatedHeight = HEADER_HEIGHT + contentHeight + 16
     const isRightSide = anchorRect.left > winW / 2
 
@@ -36,16 +37,20 @@
     const left = Math.max(8, Math.min(winW - WIDTH - 8, rawLeft))
 
     const spaceBelow = winH - anchorRect.top
-    const top = spaceBelow < estimatedHeight + 16
-      ? Math.max(8, anchorRect.bottom - estimatedHeight)
-      : anchorRect.top
+    const top =
+      spaceBelow < estimatedHeight + 16
+        ? Math.max(8, anchorRect.bottom - estimatedHeight)
+        : anchorRect.top
 
     return `top:${top}px; left:${left}px; width:${WIDTH}px;`
   })
 
   function trapFocus(e) {
     e.stopPropagation()
-    if (e.key === 'Escape') { onClose(); return }
+    if (e.key === 'Escape') {
+      onClose()
+      return
+    }
     if (e.key !== 'Tab' || !dialogEl) return
     const focusable = [...dialogEl.querySelectorAll('button:not([disabled])')]
     if (!focusable.length) return
@@ -66,7 +71,7 @@
 
 <div
   bind:this={dialogEl}
-  style={style}
+  {style}
   class="fixed z-50 bg-surface border border-border-subtle rounded-xl p-3 shadow-2xl"
   role="dialog"
   aria-modal="true"
@@ -75,10 +80,14 @@
   onclick={(e) => e.stopPropagation()}
   onkeydown={trapFocus}
 >
-  <p class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2">{title}</p>
+  <p class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2">
+    {title}
+  </p>
   <div class="flex flex-col gap-1.5">
     {#if teams.length === 0}
-      <p class="text-xs text-slate-400 text-center py-2 italic">No eligible teams available</p>
+      <p class="text-xs text-slate-400 text-center py-2 italic">
+        No eligible teams available
+      </p>
     {:else}
       {#each teams as team (team.id)}
         <button
@@ -87,7 +96,9 @@
         >
           <span class="text-lg">{team.flag}</span>
           <span class="font-semibold text-sm truncate">{team.name}</span>
-          <span class="ml-auto text-xs text-slate-200 font-bold shrink-0">{team.group}</span>
+          <span class="ml-auto text-xs text-slate-200 font-bold shrink-0"
+            >{team.group}</span
+          >
         </button>
       {/each}
     {/if}
