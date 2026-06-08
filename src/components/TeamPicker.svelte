@@ -18,7 +18,7 @@
     if (e.key !== 'Tab' || !dialogEl) return
     const focusable = /** @type {HTMLElement[]} */ ([
       ...dialogEl.querySelectorAll(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
       ),
     ])
     if (!focusable.length) return
@@ -41,7 +41,9 @@
   aria-hidden="true"
 ></div>
 
-<div class="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+<div
+  class="fixed inset-0 flex items-center justify-center z-50 pointer-events-none"
+>
   <div
     bind:this={dialogEl}
     class="bg-surface border border-border-subtle rounded-xl p-5 min-w-[230px] shadow-2xl pointer-events-auto"
