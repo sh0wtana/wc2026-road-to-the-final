@@ -1,5 +1,12 @@
 <script>
-  let { anchorRect, title, teams, onPick, onClose = () => {} } = $props()
+  let {
+    anchorRect,
+    title,
+    message = null,
+    teams,
+    onPick,
+    onClose = () => {},
+  } = $props()
 
   const WIDTH = 210
   const ROW_HEIGHT = 44
@@ -83,6 +90,9 @@
   <p class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2">
     {title}
   </p>
+  {#if message}
+    <p class="text-xs text-slate-400 mb-2 -mt-1">{message}</p>
+  {/if}
   <div class="flex flex-col gap-1.5">
     {#if teams.length === 0}
       <p class="text-xs text-slate-400 text-center py-2 italic">
