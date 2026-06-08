@@ -33,6 +33,15 @@ export function getR32Teams(match, groups, thirdPlaceAssignments) {
   return { home: resolve(match.home), away: resolve(match.away) }
 }
 
+/**
+ * Returns true when an R32 winner should be cleared after a third-place team changes.
+ * Only clears if the current winner was the old third-place team (away side).
+ * Home-team wins are preserved regardless of third-place reassignment.
+ */
+export function winnerClearedByThirdChange(winnerId, oldThirdId) {
+  return !!winnerId && winnerId === oldThirdId
+}
+
 export function getPostR32Teams(
   matchId,
   matchWinners,

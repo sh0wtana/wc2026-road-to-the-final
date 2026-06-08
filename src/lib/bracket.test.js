@@ -5,6 +5,7 @@ import {
   findTeamById,
   getR32Teams,
   getPostR32Teams,
+  winnerClearedByThirdChange,
 } from './bracket.js'
 import { DEFAULT_GROUPS } from '../data/teams.js'
 import { R16_FEED, QF_FEED, SF_FEED } from '../data/bracket.js'
@@ -176,5 +177,27 @@ describe('getEligibleThirdPlaceTeams', () => {
       expect(team).toHaveProperty('group')
       expect('ABCDEFGHIJKL').toContain(team.group)
     }
+  })
+})
+
+describe('winnerClearedByThirdChange', () => {
+  it('clears when the current winner was the old 3rd-place team', () => {
+    expect(winnerClearedByThirdChange('ENG', 'ENG')).toBe(true)
+  })
+
+  it('preserves winner when home team won (not the old 3rd-place team)', () => {
+    expect(winnerClearedByThirdChange('BRA', 'ENG')).toBe(false)
+  })
+
+  it('does not clear when no winner is set yet', () => {
+    expect(winnerClearedByThirdChange(null, 'ENG')).toBe(false)
+  })
+
+  it('does not clear when no prior 3rd-place assignment exists', () => {
+    expect(winnerClearedByThirdChange('BRA', null)).toBe(false)
+  })
+
+  it('does not clear when neither winner nor old assignment exists', () => {
+    expect(winnerClearedByThirdChange(null, null)).toBe(false)
   })
 })

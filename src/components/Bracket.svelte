@@ -15,17 +15,16 @@
     getPostR32Teams,
     findTeamById,
     getEligibleThirdPlaceTeams,
+    winnerClearedByThirdChange,
   } from '../lib/bracket.js'
 
   let activeThirdSlot = $state(null)
   let anchorRect = $state(null)
-  let thirdSlotMessage = $state(null)
   let confettiRafId = null
 
-  function openThirdSlot(slotKey, el, message = null) {
+  function openThirdSlot(slotKey, el) {
     anchorRect = el.getBoundingClientRect()
     activeThirdSlot = slotKey
-    thirdSlotMessage = message
   }
 
   function launchConfetti() {
@@ -107,12 +106,16 @@
 
   function pickThirdPlace(slotKey, teamId) {
     pushSnapshot()
+    const oldThirdId = appState.thirdPlaceAssignments[slotKey]
     appState.thirdPlaceAssignments[slotKey] = teamId
-    // Clear any R32 winner that depended on this slot
     R32_MATCHES.forEach((m) => {
       if (m.away === slotKey) {
-        appState.matchWinners[m.id] = null
-        clearDownstream(m.id)
+        const winnerId = appState.matchWinners[m.id]
+        // Only clear if the winner was the old 3rd-place team — home-team wins stay
+        if (winnerClearedByThirdChange(winnerId, oldThirdId)) {
+          appState.matchWinners[m.id] = null
+          clearDownstream(m.id)
+        }
       }
     })
     activeThirdSlot = null
@@ -170,11 +173,11 @@
   function handlePickR32(mid, isHome) {
     const home = r32[mid]?.home
     const away = r32Away(mid)
-    if (!home || !away) return
+    if (isHome ? !home : !home || !away) return
     pickWinner(mid, isHome ? home.id : away.id)
   }
 
-  function r32RowClass(team, winner, canPick, needsThird = false) {
+  function r32RowClass(team, winner, canPick) {
     if (!team) return 'text-slate-600 cursor-default'
     if (winner)
       return winner.id === team.id
@@ -182,7 +185,6 @@
         : 'text-slate-500 hover:text-amber-300 hover:bg-surface-hover cursor-pointer transition-colors'
     if (canPick)
       return 'text-slate-100 hover:text-amber-300 hover:bg-surface-hover cursor-pointer transition-colors'
-    if (needsThird) return 'text-slate-400 cursor-pointer transition-colors'
     return 'text-slate-100 cursor-default'
   }
 </script>
@@ -194,29 +196,19 @@
   {@const awayTeam = r32Away(mid, ts)}
   {@const winner = winnerOf(mid)}
   {@const canPick = !!homeTeam && !!awayTeam}
-  {@const needsThird =
-    ts.isThird && !appState.thirdPlaceAssignments[ts.slotKey]}
 
   <div
     class="rounded border overflow-hidden text-sm divide-y divide-slate-700 flex flex-col {winner ||
-    canPick
+    homeTeam
       ? 'border-slate-500'
       : 'border-slate-600'}"
   >
     <button
-      onclick={(e) =>
-        needsThird && homeTeam
-          ? openThirdSlot(
-              ts.slotKey,
-              e.currentTarget,
-              'Pick a 3rd-place team to unlock this match'
-            )
-          : handlePickR32(mid, true)}
+      onclick={() => handlePickR32(mid, true)}
       class="flex-1 flex items-center gap-1.5 px-2 w-full text-left {r32RowClass(
         homeTeam,
         winner,
-        canPick,
-        needsThird && !!homeTeam
+        !!homeTeam
       )}"
     >
       <span class="text-xs text-slate-200 font-bold shrink-0 w-8"
@@ -473,14 +465,12 @@
   <ThirdPlacePopover
     {anchorRect}
     title="Assign {activeThirdSlot}"
-    message={thirdSlotMessage}
     teams={getEligibleThirdPlaceTeams(activeThirdSlot, appState.groups).filter(
       (t) => !usedIds.has(t.id)
     )}
     onPick={(team) => pickThirdPlace(activeThirdSlot, team.id)}
     onClose={() => {
       activeThirdSlot = null
-      thirdSlotMessage = null
     }}
   />
 {/if}
