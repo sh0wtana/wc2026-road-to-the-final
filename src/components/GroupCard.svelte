@@ -5,11 +5,13 @@
   let { group, teams, onReorder } = $props()
   let _dragging = false
 
+  /** @param {CustomEvent<{items: typeof teams}>} e */
   function handleFinalize(e) {
     _dragging = false
     onReorder(e.detail.items)
   }
 
+  /** @param {CustomEvent<{items: typeof teams}>} e */
   function handleConsider(e) {
     if (!_dragging) {
       _dragging = true

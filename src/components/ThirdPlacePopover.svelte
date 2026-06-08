@@ -46,6 +46,7 @@
     return `top:${top}px; left:${left}px; width:${WIDTH}px;`
   })
 
+  /** @param {KeyboardEvent} e */
   function trapFocus(e) {
     e.stopPropagation()
     if (e.key === 'Escape') {
@@ -54,7 +55,9 @@
     }
     if (e.key !== 'Tab' || !dialogEl) return
     const focusable = /** @type {HTMLElement[]} */ ([
-      ...dialogEl.querySelectorAll('button:not([disabled])'),
+      ...dialogEl.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ),
     ])
     if (!focusable.length) return
     const first = focusable[0]
