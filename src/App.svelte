@@ -3,12 +3,28 @@
   import GroupSection from './components/GroupSection.svelte'
   import Bracket from './components/Bracket.svelte'
   import { resetState } from './store.svelte.js'
+
+  const DESIGN_WIDTH = 1360
+
+  let scale = $state(Math.min(1, window.innerWidth / DESIGN_WIDTH))
+  let scaledHeight = $derived(window.innerHeight / scale)
+
+  $effect(() => {
+    function onResize() {
+      scale = Math.min(1, window.innerWidth / DESIGN_WIDTH)
+    }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  })
 </script>
 
-<div
-  class="h-screen overflow-hidden flex flex-col bg-gradient-to-br from-pitch to-pitch-end text-slate-100"
->
-  <Header onReset={resetState} />
-  <GroupSection />
-  <Bracket />
+<div style="width:100vw;height:100vh;overflow:hidden">
+  <div
+    class="flex flex-col bg-gradient-to-br from-pitch to-pitch-end text-slate-100"
+    style="width:{DESIGN_WIDTH}px;height:{scaledHeight}px;transform:scale({scale});transform-origin:top left"
+  >
+    <Header onReset={resetState} />
+    <GroupSection />
+    <Bracket />
+  </div>
 </div>
